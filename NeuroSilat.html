@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSilat Interactive Proposal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices: 
+        - Problem Statement: Textual, key difficulties highlighted. Goal: Inform.
+        - Solution Pillars (Silat, Neuroscience, Dev Theories): Interactive tabs/accordions for layered information. Goal: Organize & Inform. Interaction: Click to reveal content. Library: Vanilla JS.
+        - Developmental Theories (Piaget, Erikson, Vygotsky): Nested within 'Dev Theories' tab, using accordions for detailed stages/concepts. Goal: Organize & Inform. Interaction: Click to expand/collapse. Library: Vanilla JS.
+        - NSDC Program: Textual description, visual timeline/steps for program flow. Goal: Inform & Organize. Interaction: Static visual or simple JS for step highlighting.
+        - UVPs: Grid of interactive cards. Goal: Compare & Inform. Interaction: Hover/click to reveal more details. Library: Vanilla JS.
+        - Market Data ($300M Martial Arts, $2.3B Child Dev, $3.8B Baby/Maternity, growth rates): Bar chart for market size comparison, dynamic stat display. Goal: Compare & Inform. Interaction: Chart.js rendering. Library: Chart.js.
+        - Justification: Interactive elements like tabs and accordions are chosen to manage information density, especially for theories, making it less overwhelming. Charts provide quick visual comparison for market data. Cards for UVPs allow for concise presentation with optional drill-down. All choices support the goal of clear, digestible information presentation within the designed SPA structure.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .accordion-content.active { max-height: 1000px; /* Adjust as needed */ transition: max-height 0.5s ease-in; }
+        .section-intro {
+            font-size: 1.125rem; /* text-lg */
+            line-height: 1.75rem; /* leading-relaxed */
+            color: #4B5563; /* text-gray-600 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            max-width: 48rem; /* max-w-3xl */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Tailwind max-w-2xl equivalent */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height, can be responsive with Tailwind h-72 sm:h-80 md:h-96 */
+            max-height: 400px; /* Tailwind max-h-96 */
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        /* Basic styling for active tab */
+        .tab-button.active {
+            border-color: #0D9488; /* teal-600 */
+            color: #0D9488; /* teal-600 */
+            font-weight: 600;
+        }
+        .uvp-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .uvp-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+         /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-neutral-700">
+
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-teal-600">NeuroSilat</a>
+            <div class="hidden md:flex space-x-4">
+                <a href="#overview" class="text-neutral-600 hover:text-teal-600">Overview</a>
+                <a href="#need" class="text-neutral-600 hover:text-teal-600">The Need</a>
+                <a href="#approach" class="text-neutral-600 hover:text-teal-600">Our Approach</a>
+                <a href="#program" class="text-neutral-600 hover:text-teal-600">The Program</a>
+                <a href="#why-us" class="text-neutral-600 hover:text-teal-600">Why NeuroSilat?</a>
+                <a href="#market" class="text-neutral-600 hover:text-teal-600">Market</a>
+                <a href="#contact" class="text-neutral-600 hover:text-teal-600">Contact</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-neutral-600 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-lg">
+            <a href="#overview" class="block px-6 py-3 text-neutral-600 hover:bg-amber-100 hover:text-teal-600">Overview</a>
+            <a href="#need" class="block px-6 py-3 text-neutral-600 hover:bg-amber-100 hover:text-teal-600">The Need</a>
+            <a href="#approach" class="block px-6 py-3 text-neutral-600 hover:bg-amber-100 hover:text-teal-600">Our Approach</a>
+            <a href="#program" class="block px-6 py-3 text-neutral-600 hover:bg-amber-100 hover:text-teal-600">The Program</a>
+            <a href="#why-us" class="block px-6 py-3 text-neutral-600 hover:bg-amber-100 hover:text-teal-600">Why NeuroSilat?</a>
+            <a href="#market" class="block px-6 py-3 text-neutral-600 hover:bg-amber-100 hover:text-teal-600">Market</a>
+            <a href="#contact" class="block px-6 py-3 text-neutral-600 hover:bg-amber-100 hover:text-teal-600">Contact</a>
+        </div>
+    </nav>
+
+    <section id="overview" class="py-16 md:py-24 bg-gradient-to-br from-amber-100 via-amber-50 to-white text-center">
+        <div class="container mx-auto px-6">
+            <h1 class="text-4xl md:text-6xl font-bold text-teal-600 mb-6">NeuroSilat</h1>
+            <p class="text-xl md:text-2xl text-neutral-600 mb-8 max-w-3xl mx-auto">A pioneering program merging Silat, Neuroscience, and Child Development theories for holistic growth.</p>
+            <a href="#approach" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 text-lg">Discover Our Approach</a>
+        </div>
+    </section>
+
+    <section id="need" class="py-16">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-semibold text-teal-600 mb-8">Understanding Today's Challenges for Children</h2>
+            <p class="section-intro">This section outlines the critical challenges modern parenting faces and the profound impact these can have on a child's long-term development, underscoring the need for innovative solutions like NeuroSilat.</p>
+            <div class="grid md:grid-cols-2 gap-8 text-left">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-semibold text-orange-500 mb-3">Parental Hurdles in a Modern World</h3>
+                    <p class="text-neutral-600 leading-relaxed mb-4">In today's fast-paced, technology-driven society, parents face significant difficulties in supporting children through critical developmental stages. Demanding work schedules, digital media influence, and societal pressures make holistic guidance challenging.</p>
+                    <p class="text-neutral-600 leading-relaxed font-medium">This is not a parental failing, but a consequence of a complex, evolving landscape.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-semibold text-orange-500 mb-3">Long-Term Impact on Children</h3>
+                    <ul class="space-y-3 text-neutral-600">
+                        <li class="flex items-start">
+                            <span class="text-teal-500 mr-2 mt-1">&#10004;</span> 
+                            <span><strong class="text-neutral-700">Cognitive Delays:</strong> Difficulties acquiring knowledge, leading to academic and problem-solving struggles.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 mr-2 mt-1">&#10004;</span> 
+                            <span><strong class="text-neutral-700">Emotional Instability:</strong> Challenges managing emotions and building resilience, affecting mental health and relationships.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 mr-2 mt-1">&#10004;</span> 
+                            <span><strong class="text-neutral-700">Social Difficulties:</strong> Problems forming healthy relationships, impacting personal and professional success.</span>
+                        </li>
+                    </ul>
+                    <p class="mt-4 text-neutral-600 italic">Unresolved challenges can affect career prospects, relationships, and overall well-being in adulthood.</p>
+                </div>
+            </div>
+            <div class="mt-10 text-sm text-neutral-500">
+                <p><strong class="text-neutral-600">Supporting Data:</strong> Research from the NIH highlights the importance of parental engagement, while APA studies show modern lifestyle pressures reduce parental time for developmental activities.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="approach" class="py-16 bg-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-semibold text-teal-600 mb-8">The NeuroSilat Method: Our Integrated Approach</h2>
+            <p class="section-intro">NeuroSilat offers a unique and powerful solution by weaving together three distinct yet complementary disciplines. Explore each pillar below to understand how we create a holistic developmental experience.</p>
+            
+            <div class="mb-8 border-b border-neutral-300 flex justify-center">
+                <button class="tab-button active py-3 px-6 border-b-2 border-transparent hover:border-teal-500 focus:outline-none" onclick="openTab(event, 'silat')">The Power of Silat</button>
+                <button class="tab-button py-3 px-6 border-b-2 border-transparent hover:border-teal-500 focus:outline-none" onclick="openTab(event, 'neuroscience')">The Science of the Brain</button>
+                <button class="tab-button py-3 px-6 border-b-2 border-transparent hover:border-teal-500 focus:outline-none" onclick="openTab(event, 'development')">Child Development Practices</button>
+            </div>
+
+            <div id="silat" class="tab-content active text-left p-6 bg-amber-50 rounded-lg shadow">
+                <h3 class="text-2xl font-semibold text-orange-500 mb-4">The Power of Silat</h3>
+                <p class="text-neutral-600 leading-relaxed mb-3">At the core of NeuroSilat is Silat, a traditional Indonesian martial art renowned for its fluid movements, discipline, and deep cultural roots. Silat provides the physical foundation, promoting strength, flexibility, coordination, and self-defense skills.</p>
+                <p class="text-neutral-600 leading-relaxed">Beyond the physical, Silat instills mental discipline, focus, and emotional regulation—all essential for a child's holistic development.</p>
+            </div>
+
+            <div id="neuroscience" class="tab-content text-left p-6 bg-amber-50 rounded-lg shadow">
+                <h3 class="text-2xl font-semibold text-orange-500 mb-4">The Science of the Brain: Neuroscience</h3>
+                <p class="text-neutral-600 leading-relaxed mb-3">Neuroscience provides the scientific backbone for NeuroSilat. A key concept is <strong>neuroplasticity</strong>, the brain's remarkable ability to reorganize and form new neural connections.</p>
+                <p class="text-neutral-600 leading-relaxed">NeuroSilat incorporates activities specifically designed to stimulate brain development during critical growth periods, leading to lasting improvements in cognitive abilities, emotional resilience, and mental clarity.</p>
+            </div>
+
+            <div id="development" class="tab-content text-left p-6 bg-amber-50 rounded-lg shadow">
+                <h3 class="text-2xl font-semibold text-orange-500 mb-4">Traditional Child Development Practices</h3>
+                <p class="text-neutral-600 leading-relaxed mb-4">Building on established child development theories, NeuroSilat integrates time-tested practices focusing on holistic growth across physical, cognitive, emotional, and social domains. By combining these methods with modern scientific insights, NeuroSilat supports children in achieving their full potential.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-teal-700 p-3 bg-amber-100 rounded-md hover:bg-amber-200 focus:outline-none flex justify-between items-center">
+                            Jean Piaget's Cognitive Development
+                            <span class="accordion-icon transform transition-transform duration-300">&#9660;</span>
+                        </button>
+                        <div class="accordion-content bg-white p-4 rounded-b-md border border-t-0 border-amber-200">
+                            <ul class="list-disc list-inside space-y-2 text-neutral-600">
+                                <li><strong>Sensorimotor (0-2 years):</strong> World through senses/actions; object permanence.</li>
+                                <li><strong>Preoperational (2-7 years):</strong> Symbolic thought, egocentric thinking.</li>
+                                <li><strong>Concrete Operational (7-11 years):</strong> Logical thought about concrete events, conservation. (Primary target for NSDC)</li>
+                                <li><strong>Formal Operational (12+ years):</strong> Abstract, hypothetical reasoning.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-teal-700 p-3 bg-amber-100 rounded-md hover:bg-amber-200 focus:outline-none flex justify-between items-center">
+                            Erik Erikson's Psychosocial Development
+                            <span class="accordion-icon transform transition-transform duration-300">&#9660;</span>
+                        </button>
+                        <div class="accordion-content bg-white p-4 rounded-b-md border border-t-0 border-amber-200">
+                            <ul class="list-disc list-inside space-y-2 text-neutral-600">
+                                <li><strong>Trust vs. Mistrust (0-1 year):</strong> Foundation of trust.</li>
+                                <li><strong>Autonomy vs. Shame/Doubt (1-3 years):</strong> Personal control.</li>
+                                <li><strong>Initiative vs. Guilt (3-6 years):</strong> Asserting power.</li>
+                                <li><strong>Industry vs. Inferiority (6-12 years):</strong> Mastery of tasks/skills. (Primary target for NSDC)</li>
+                                <li><strong>Identity vs. Role Confusion (12-18 years):</strong> Sense of self.</li>
+                                </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-teal-700 p-3 bg-amber-100 rounded-md hover:bg-amber-200 focus:outline-none flex justify-between items-center">
+                            Lev Vygotsky's Sociocultural Theory
+                             <span class="accordion-icon transform transition-transform duration-300">&#9660;</span>
+                        </button>
+                        <div class="accordion-content bg-white p-4 rounded-b-md border border-t-0 border-amber-200">
+                            <ul class="list-disc list-inside space-y-2 text-neutral-600">
+                                <li><strong>Zone of Proximal Development (ZPD):</strong> Gap between independent and assisted ability. Scaffolding helps.</li>
+                                <li><strong>Social Interaction:</strong> Cognitive development influenced by interaction, especially language.</li>
+                                <li><strong>Cultural Tools:</strong> Language, symbols, tech shape thinking.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="program" class="py-16">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-semibold text-teal-600 mb-8">The NeuroSilat Developmental Curriculum (NSDC)</h2>
+            <p class="section-intro">Discover the specifics of our flagship NeuroSilat Developmental Curriculum (NSDC). This section details the program structure, learning components, and how we track and support your child's progress.</p>
+            
+            <div class="bg-white p-8 rounded-lg shadow-xl max-w-4xl mx-auto text-left">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-orange-500 mb-4">Program Overview</h3>
+                        <ul class="space-y-3 text-neutral-600">
+                            <li class="flex items-center"><span class="text-teal-500 mr-2 text-xl">&#9200;</span> <strong>Duration:</strong> 5-month curriculum</li>
+                            <li class="flex items-center"><span class="text-teal-500 mr-2 text-xl">&#128197;</span> <strong>Frequency:</strong> 90-minute sessions, once a week</li>
+                            <li class="flex items-center"><span class="text-teal-500 mr-2 text-xl">&#128100;</span> <strong>Target Age:</strong> 7 to 12 years old</li>
+                            <li class="flex items-center"><span class="text-teal-500 mr-2 text-xl">&#127919;</span> <strong>Goal:</strong> Support growth and address unresolved earlier developmental challenges.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-orange-500 mb-4">Key Components</h3>
+                        <ul class="space-y-3 text-neutral-600">
+                             <li><strong class="text-neutral-700">Specific Silat Movements:</strong> Tailored to stimulate neuroplasticity.</li>
+                             <li><strong class="text-neutral-700">Cognitive & Emotional Exercises:</strong> Embedded within Silat training.</li>
+                             <li><strong class="text-neutral-700">Theory Integration:</strong> Piaget, Erikson, Vygotsky principles applied.</li>
+                             <li><strong class="text-neutral-700">Scaffolding (ZPD):</strong> Instructor-guided learning.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr class="my-8 border-neutral-200">
+
+                <div>
+                    <h3 class="text-2xl font-semibold text-orange-500 mb-4">Assessment & Progress</h3>
+                     <div class="space-y-4 text-neutral-600">
+                        <p><strong class="text-neutral-700">Initial Assessment:</strong> Comprehensive look at physical, cognitive, emotional, and social development.</p>
+                        <p><strong class="text-neutral-700">Continuous Monitoring:</strong> Developmental milestones tracking with parental involvement.</p>
+                        <p><strong class="text-neutral-700">Adaptive Interventions:</strong> Program adapted to individual needs based on assessment data.</p>
+                        <p><strong class="text-neutral-700">Final Progress Report:</strong> Detailed report showing growth in skills, thinking, and emotional resilience.</p>
+                    </div>
+                </div>
+                
+                <hr class="my-8 border-neutral-200">
+
+                <div>
+                    <h3 class="text-2xl font-semibold text-orange-500 mb-4">Home-Based Support</h3>
+                    <p class="text-neutral-600 leading-relaxed mb-3">To support continuous learning, we provide video recordings for students to use at home. These are designed to complement weekly sessions, allowing children to practice and reinforce learning in a personalized way.</p>
+                    <p class="text-neutral-600 leading-relaxed">We are exploring technology like Virtual Reality (VR) and Augmented Reality (AR) to make home training even more engaging and effective.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="why-us" class="py-16 bg-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-semibold text-teal-600 mb-8">Why Choose NeuroSilat? Our Unique Advantages</h2>
+            <p class="section-intro">NeuroSilat stands apart. This section highlights the key advantages that make our program uniquely effective in fostering comprehensive child development.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="uvp-card bg-amber-50 p-6 rounded-lg shadow-md text-left">
+                    <h3 class="text-xl font-semibold text-orange-500 mb-3">1. Unique Integration</h3>
+                    <p class="text-neutral-600 text-sm">Combines traditional martial arts with neuroscience principles, focusing on neuroplasticity and measurable outcomes in cognitive, emotional, and physical development.</p>
+                </div>
+                <div class="uvp-card bg-amber-50 p-6 rounded-lg shadow-md text-left">
+                    <h3 class="text-xl font-semibold text-orange-500 mb-3">2. Measurable Outcomes</h3>
+                    <p class="text-neutral-600 text-sm">Emphasizes tracking and measuring progress across domains. Data-driven approach provides parents with tangible evidence of their child's growth.</p>
+                </div>
+                <div class="uvp-card bg-amber-50 p-6 rounded-lg shadow-md text-left">
+                    <h3 class="text-xl font-semibold text-orange-500 mb-3">3. Cultural Relevance & Modern Appeal</h3>
+                    <p class="text-neutral-600 text-sm">Leverages Silat's cultural heritage, resonating with Indonesian families, while integrating modern scientific approaches to child development.</p>
+                </div>
+                <div class="uvp-card bg-amber-50 p-6 rounded-lg shadow-md text-left">
+                    <h3 class="text-xl font-semibold text-orange-500 mb-3">4. Scalability via Technology</h3>
+                    <p class="text-neutral-600 text-sm">Integration of technology (VR, AR, online platforms) enables wider reach and personalized, scalable programs, complemented by strategic partnerships.</p>
+                </div>
+                <div class="uvp-card bg-amber-50 p-6 rounded-lg shadow-md text-left">
+                    <h3 class="text-xl font-semibold text-orange-500 mb-3">5. Holistic Approach</h3>
+                    <p class="text-neutral-600 text-sm">Addresses physical, cognitive, and emotional development in an integrated manner, offering a one-stop solution for comprehensive child growth.</p>
+                </div>
+                 <div class="uvp-card bg-amber-50 p-6 rounded-lg shadow-md text-left flex flex-col justify-center items-center">
+                    <span class="text-4xl text-teal-500 mb-2">&#127775;</span>
+                    <p class="text-neutral-600 text-sm text-center">NeuroSilat nurtures every aspect of a child's development.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="market" class="py-16">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-semibold text-teal-600 mb-8">Market Insight & Potential in Indonesia</h2>
+            <p class="section-intro">NeuroSilat is poised for growth in a vibrant market. This section provides insights into the Indonesian market landscape, demonstrating the significant opportunity for our program.</p>
+            
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="bg-white p-6 rounded-lg shadow-lg text-left">
+                    <h3 class="text-2xl font-semibold text-orange-500 mb-4">Market Sizes & Growth</h3>
+                    <ul class="space-y-3 text-neutral-600 mb-6">
+                        <li><strong>Indonesian Martial Arts Sector:</strong> ~\$300 Million USD annually.</li>
+                        <li><strong>Child Development Market:</strong> Projected \$2.3 Billion USD by 2027 (6% annual growth).</li>
+                        <li><strong>Baby & Maternity Market:</strong> Expected \$3.8 Billion USD by 2027 (6.8% CAGR).</li>
+                    </ul>
+                    <p class="text-neutral-600 italic">Growing demand for programs offering more than physical training aligns with modern educational and health trends.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-semibold text-orange-500 mb-4">Market Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mt-12 text-left">
+                 <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-orange-500 mb-3">Target Audience</h3>
+                    <ul class="list-disc list-inside text-neutral-600 space-y-1">
+                        <li>Parents of Young Children (Ages 5-15)</li>
+                        <li>Martial Arts Enthusiasts</li>
+                        <li>Schools & Educational Institutions</li>
+                        <li>Healthcare & Wellness Centers</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-orange-500 mb-3">Market Drivers</h3>
+                    <ul class="list-disc list-inside text-neutral-600 space-y-1">
+                        <li>Scientific Validation of Benefits</li>
+                        <li>Differentiation through Holistic Approach</li>
+                        <li>Cultural and Educational Relevance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-16 bg-teal-600 text-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-semibold mb-6">Get Involved with NeuroSilat</h2>
+            <p class="section-intro !text-teal-50 mb-8">Ready to learn more or partner with us? Connect with the NeuroSilat team to explore how we can work together to empower children.</p>
+            <a href="mailto:info@neurosilat.example.com" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 text-lg">Contact Us</a>
+        </div>
+    </section>
+
+    <footer class="bg-neutral-800 text-neutral-300 py-8 text-center">
+        <p>&copy; <span id="currentYear"></span> NeuroSilat. All Rights Reserved.</p>
+        <p class="text-sm mt-1">Empowering Future Generations.</p>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close mobile menu on link click
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+
+        // Tabs functionality
+        function openTab(event, tabName) {
+            let i, tabcontent, tabbuttons;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tabbuttons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            event.currentTarget.classList.add("active");
+        }
+        // Initialize first tab
+        if (document.querySelector('.tab-button.active')) {
+             document.querySelector('.tab-button.active').click();
+        }
+
+
+        // Accordion functionality
+        const accordionButtons = document.querySelectorAll('.accordion-button');
+        accordionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('.accordion-icon');
+                
+                // Close other accordions in the same group (optional)
+                // accordionButtons.forEach(otherButton => {
+                //     if (otherButton !== button) {
+                //         otherButton.nextElementSibling.classList.remove('active');
+                //         otherButton.nextElementSibling.style.maxHeight = null;
+                //         otherButton.querySelector('.accordion-icon').style.transform = 'rotate(0deg)';
+                //     }
+                // });
+
+                content.classList.toggle('active');
+                if (content.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    content.style.maxHeight = null;
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // Chart.js: Market Data
+        const marketCtx = document.getElementById('marketChart');
+        if (marketCtx) {
+            new Chart(marketCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Martial Arts Sector', 'Child Dev. Market (2027)', 'Baby/Maternity Market (2027)'],
+                    datasets: [{
+                        label: 'Market Size (USD Millions)',
+                        data: [300, 2300, 3800], // Market sizes in Millions
+                        backgroundColor: [
+                            'rgba(233, 124, 35, 0.6)', // orange-500 with opacity
+                            'rgba(58, 136, 145, 0.6)',  // teal-600 with opacity
+                            'rgba(240, 168, 104, 0.6)'  // A lighter orange
+                        ],
+                        borderColor: [
+                            'rgba(233, 124, 35, 1)',
+                            'rgba(58, 136, 145, 1)',
+                            'rgba(240, 168, 104, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Market Value (USD Millions)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false // Hiding legend as it's self-explanatory with one dataset
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += '$' + context.parsed.y + 'M';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
+
